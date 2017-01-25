@@ -1,13 +1,21 @@
 var XAC = XAC || {};
 var EPS = 1e-6;
 
-var copy = function(object) {
+//
+//  get a copy of an object
+//
+XAC.copy = function(object) {
     return union(object);
 }
 
-XAC.layFlat = function(object) {
-    var boundZ = object.getBounds()[1].z - object.getBounds()[0].z;
-    return object.center().translate([0, 0, boundZ / 2]);
+//
+//  get the center of an object
+//
+XAC.getCenter = function(object) {
+    var centerX = (object.getBounds()[1].x + object.getBounds()[0].x) / 2;
+    var centerY = (object.getBounds()[1].y + object.getBounds()[0].y) / 2;
+    var centerZ = (object.getBounds()[1].z + object.getBounds()[0].z) / 2;
+    return [centerX, centerY, centerZ];
 }
 
 //
@@ -38,22 +46,11 @@ XAC.makeText = function(text, strokeWidth, thickness, w, h) {
     return scaleTo(textShape, w, h, undefined).center();
 }
 
-//
-//  align a set of objects linearly for visual debugging
-//  - objects: an array of objects
-//  - (optional) spacing: how much space between each objects
-//
-XAC.showAll = function(objects, spacing) {
-    var showPieces = [];
-    var dx = 0;
-    spacing = spacing == undefined ? 10 : spacing;
-    for (var i = 0; i < objects.length; i++) {
-        // console.log(objects[i].getBounds());
-        var bounds = objects[i].getBounds();
-        dx += bounds[1]._x - bounds[0]._x + spacing;
-        showPieces.push(objects[i].translate([dx, 0, 0]));
-    }
-    return showPieces;
+XAC.scaleCentric = function(object, scaleFactor) {
+    var center = XAC.getCenter(object);
+    var objectCopy = object.center();
+    objectCopy = objectCopy.scale(scaleFactor);
+    return objectCopy.translate(center);
 }
 
 //
@@ -70,6 +67,24 @@ XAC.scaleTo = function(object, x, y, z) {
     var scaleZ = (z == undefined) ? scaleX : z / boundZ;
 
     return object.scale([scaleX, scaleY, scaleZ]).center();
+}
+
+//
+//  align a set of objects linearly for visual debugging
+//  - objects: an array of objects
+//  - (optional) spacing: how much space between each objects
+//
+XAC.showAll = function(objects, spacing) {
+    var showPieces = [];
+    var dx = 0;
+    spacing = spacing == undefined ? 10 : spacing;
+    for (var i = 0; i < objects.length; i++) {
+        // console.log(objects[i].getBounds());
+        var bounds = objects[i].getBounds();
+        dx += bounds[1]._x - bounds[0]._x + spacing;
+        showPieces.push(objects[i].translate([dx, 0, 0]));
+    }
+    return showPieces;
 }
 
 XAC.makeRoundedPlatform = function(x, y, z, r) {
